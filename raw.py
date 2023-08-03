@@ -1,5 +1,4 @@
 import requests
-import csv
 
 def download_earthquake_data_csv_using_api(station_name):
     api_url = "https://arc.indiawris.gov.in/server/rest/services/NWIC/Extreme_Temp_RF/MapServer/1/query"
@@ -22,17 +21,17 @@ def download_earthquake_data_csv_using_api(station_name):
         if "features" in data:
             features = data["features"]
             if len(features) > 0:
-                # Create and save the CSV file
+                # Extract field names from the first feature
+                fields = list(features[0]["attributes"].keys())
+
+                # Create and write the CSV file
                 output_file = f"{station_name.lower().replace(' ', '_')}.csv"
                 with open(output_file, "w", newline="") as csvfile:
-                    # Manually write the column headers to the CSV file
-                    fieldnames = features[0]["attributes"].keys()
-                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                    writer.writeheader()
-
-                    # Write the data rows to the CSV file
+                    csvfile.write(",".join(fields) + "\n")
                     for feature in features:
-                        writer.writerow(feature["attributes"])
+                        attributes = feature["attributes"]
+                        row_data = [str(attributes[field]) for field in fields]
+                        csvfile.write(",".join(row_data) + "\n")
 
                 print(f"CSV file downloaded and saved as {output_file}")
             else:
@@ -44,6 +43,6 @@ def download_earthquake_data_csv_using_api(station_name):
         print(f"Error: {e}")
 
 if __name__ == "__main__":
-    station_name = "Ahmedabad"  # Replace "Ahmedabad" with the desired station_name
+    station_name = "Keshod (A)"  # Replace "Ahmedabad" with the desired station_name
     # Download earthquake data as a CSV file using the API
     download_earthquake_data_csv_using_api(station_name)
